@@ -23,10 +23,10 @@ var ManageAuthorPage = React.createClass({
 
     //calling setState in componentWillMount will not cause component to re-render
     componentWillMount: function(){
-        var authorId = this.props.params.id;
+        var authorId = this.props.params.id; //from the path '/author:id'
 
         if (authorId) {
-            this.setState({author: AuthorApi.getAuthorById(authorId)});
+            this.setState({author: AuthorStore.getAuthorById(authorId)});
         }
     },
     
@@ -72,7 +72,12 @@ var ManageAuthorPage = React.createClass({
             return;
         }
 
-        AuthorApi.saveAuthor(this.state.author);
+        if(this.state.author.id){
+            AuthorActions.updateAuthor(this.state.author);
+        } else {
+            AuthorActions.createAuthor(this.state.author);
+        }
+
 		this.setState({dirty: false});
         toastr.success('Author saved.');
         this.transitionTo('authors');

@@ -21,7 +21,7 @@ var AuthorStore = assign({}, EventEmitter.prototype, {
     }, 
 
     emitChange: function() {
-        this.emit(CHANGE_EVENT);
+        this.emit(CHANGE_EVENT); //notifies all the views that the AuthoStore has been updated
     },
 
     getAllAuthors: function() {
@@ -34,12 +34,26 @@ var AuthorStore = assign({}, EventEmitter.prototype, {
 });
 
 //the embedded function will get called anytime ANY action is dispatched
+//.register listens for all dispatch calls to the store
 Dispatcher.register(function(action){
 
-        switch(action.actionType){
+        switch(action.actionType) {
+            case ActionTypes.INITIALIZE: 
+                _authors = action.initialData.authors;
+                AuthorStore.emitChange(); 
+                break;
             case ActionTypes.CREATE_AUTHOR: 
                 _authors.push(action.author);
-                AuthorStore.emitChange(); //notifies all the views that the AuthoStore has been updated
+                AuthorStore.emitChange(); 
+                break;
+            case ActionTypes.UPDATE_AUTHOR: 
+                var existingAuthor = _.find(_authors, {id: action.author.id});
+                var existingAuthorIndex = _.indexOf(_authors, existingAuthor);
+                _authors.splice(existingAuthorIndex, 1, action.author); //replace that element in array with action.author (updatedAuthor)
+                AuthorStore.emitChange(); 
+                break;
+            default:
+                // no op
         }
 });
 
