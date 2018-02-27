@@ -11,7 +11,7 @@ var InitializeActions = {
             initialData: {
                 authors: AuthorApi.getAllAuthors()
             }
-        })
+        });
     }
 };
 
