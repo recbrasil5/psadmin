@@ -3,22 +3,43 @@
 var React = require('react');
 var Router = require('react-router');
 var AuthorForm = require('./authorForm');
-var AuthorApi = require('../../api/authorApi');
+var AuthorActions = require('../../actions/authorActions');
+var AuthorStore = require('../../stores/authorStore');
 var toastr = require('toastr');
 
 var ManageAuthorPage = React.createClass({
     mixins: [
         Router.Navigation
     ],
+
+    statics: {
+        willTransitionFrom: function(transition, component) {
+
+            if(component.state.dirty && !confirm('Leave without saving?')){
+                transition.abort();
+            }
+        }
+    },
+
+    //calling setState in componentWillMount will not cause component to re-render
+    componentWillMount: function(){
+        var authorId = this.props.params.id;
+
+        if (authorId) {
+            this.setState({author: AuthorApi.getAuthorById(authorId)});
+        }
+    },
     
-    getInitialState: function(){
+    getInitialState: function() {
         return {
             author: { id: '', firstName: '', lastName: ''},
-            errors: {}
+            errors: {},
+            dirty: false
         };
     },
 
-    setAuthorState: function(event){
+    setAuthorState: function(event) {
+		this.setState({dirty: true});
         var field = event.target.name;
         var value = event.target.value;
         this.state.author[field] = value;
@@ -52,6 +73,7 @@ var ManageAuthorPage = React.createClass({
         }
 
         AuthorApi.saveAuthor(this.state.author);
+		this.setState({dirty: false});
         toastr.success('Author saved.');
         this.transitionTo('authors');
     },
